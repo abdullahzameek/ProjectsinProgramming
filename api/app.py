@@ -16,7 +16,6 @@ CORS(app)
 
 @app.route("/getFares", methods=['POST', 'GET'])
 def getApproxFares():
-    print(request.json)
     yellow_taxi = xgb.Booster()
     uber = xgb.Booster()
     lyft = xgb.Booster()
@@ -51,9 +50,6 @@ def getApproxFares():
     predict_uber = uber.predict(test_xgb, ntree_limit=num_round)
     predict_lyft = lyft.predict(test_xgb, ntree_limit=num_round)
 
-    print(predict_yellow_taxi[0])
-    print(predict_uber[0])
-    print(predict_lyft[0])
     res = {
         "yellow_taxi": str(predict_yellow_taxi[0]),
         "uber": str(predict_uber[0]),
