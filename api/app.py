@@ -51,7 +51,7 @@ def getApproxFares():
     predict_lyft = lyft.predict(test_xgb, ntree_limit=num_round)
 
     res = {
-        "yellow_taxi": str(predict_yellow_taxi[0]),
+        "yellow_taxi": str(predict_yellow_taxi[0]+2.5), #yellow taxis have a base of 2.5
         "uber": str(predict_uber[0]),
         "lyft": str(predict_lyft[0])
     }
