@@ -5,7 +5,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import TaxiService from "../services/TaxiService";
 import axios from "axios";
@@ -37,7 +37,8 @@ export default function SearchForm() {
     destination: "",
   });
 
-  const [fetchedData, setFetchedData] = useState('')
+  const [fetchedData, setFetchedData] = useState({});
+  const [isFetched, setIsFetched] = useState(false);
 
   const handleOnChange = (event) => {
     const { name, value } = event.target;
@@ -115,61 +116,80 @@ export default function SearchForm() {
       console.log(pickup);
       console.log(dropoff);
 
-      let dist = getDistanceFromLatLonInKm(pickup['lat'], pickup['lng'], dropoff['lat'], dropoff['lng'])
-      console.log(dist)
+      let dist = getDistanceFromLatLonInKm(
+        pickup["lat"],
+        pickup["lng"],
+        dropoff["lat"],
+        dropoff["lng"]
+      );
+      console.log(dist);
 
       let currentDate = new Date();
       currentDate = currentDate.toISOString();
-      let reqObj  ={
-          'distance': dist,
-          'pickup_datetime': currentDate
-      }
-    let d = await TaxiService.getFares(reqObj).then((resp) => {
-          console.log(resp.data)
-        });
+      let reqObj = {
+        distance: dist,
+        pickup_datetime: currentDate,
+      };
+      console.log(reqObj);
+      let d = await TaxiService.getFares(reqObj).then((resp) => {
+        console.log(resp.data);
+        setFetchedData(resp.data);
+        setIsFetched(true);
+      });
+      console.log("here is fetched");
+      console.log(fetchedData);
     }
   };
 
   const classes = useStyles();
 
   return (
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <div className={classes.paper}>
-        <Typography component="h1" variant="h5">
-          Enter Origin and Destination!
-        </Typography>
-        <form className={classes.form}>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            fullWidth
-            id="origin"
-            label="origin"
-            name="origin"
-            onChange={handleOnChange}
-            autoFocus
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            fullWidth
-            name="destination"
-            label="destination"
-            onChange={handleOnChange}
-            id="destination"
-          />
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            className={classes.submit}
-            onClick={onSubmit}
-          >
-            Get Fares!
-          </Button>
-        </form>
-      </div>
-    </Container>
+    <>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <div className={classes.paper}>
+          <Typography component="h1" variant="h5">
+            Enter Origin and Destination!
+          </Typography>
+          <form className={classes.form}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              id="origin"
+              label="origin"
+              name="origin"
+              onChange={handleOnChange}
+              autoFocus
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              name="destination"
+              label="destination"
+              onChange={handleOnChange}
+              id="destination"
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+              onClick={onSubmit}
+            >
+              Get Fares!
+            </Button>
+          </form>
+        </div>
+      </Container>
+      {isFetched === true &&
+      <>
+      <center><h3>Yellow Taxi:</h3> <p>{Number(fetchedData['yellow_taxi']).toFixed(2)}</p></center>
+      <center><h3>Uber: </h3> <p>{Number(fetchedData['uber']).toFixed(2)}</p></center>
+      <center><h3>Lyft: </h3> <p>{Number(fetchedData['lyft']).toFixed(2)}</p></center>
+      </>
+      }
+    </>
   );
 }
