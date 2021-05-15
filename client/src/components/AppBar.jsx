@@ -41,7 +41,7 @@ export default function ButtonAppBar() {
       <AppBar position="static" className={classes.nav}>
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            Fare Comparer
+            Findr
           </Typography>
           <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={goHome}>
             <SimpleModel/>

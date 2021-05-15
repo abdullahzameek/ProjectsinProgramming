@@ -14,54 +14,108 @@ import pandas as pd
 app = flask.Flask(__name__)
 CORS(app)
 
-@app.route("/getFares", methods=['POST', 'GET'])
+
+@app.route("/getFares", methods=["POST", "GET"])
 def getApproxFares():
     yellow_taxi = xgb.Booster()
     uber = xgb.Booster()
     lyft = xgb.Booster()
-    
+
+    uber_sm = xgb.Booster()
+    lyft_sm = xgb.Booster()
+
     num_round = 2
+
     yellow_taxi.load_model("yellow_cab_model.json")
     uber.load_model("uber_model.json")
     lyft.load_model("lyft_model.json")
 
-    distance = request.json['distance']
-    pickup_datetime = request.json['pickup_datetime']
+    uber_sm.load_model("uber_model_sm.json")
+    lyft_sm.load_model("lyft_model_sm.json")
 
-    if distance==0:
-        res = {
-            "yellow_taxi": str(0),
-            "uber" : str(0),
-            "lyft" :str(0)
-        }
+    distance = request.json["distance"]
+    pickup_datetime = request.json["pickup_datetime"]
+
+    if distance == 0:
+        res = {"yellow_taxi": str(0), "uber": str(0), "lyft": str(0)}
         return json.dumps(res)
 
-    queryDict = {
-        "distance": [distance],
-        "pickup_datetime": [pickup_datetime]
-    }
+    queryDict = {"distance": [distance], "pickup_datetime": [pickup_datetime]}
+
     test = pd.DataFrame(queryDict)
-    test['pickup_datetime'] = to_datetime(test['pickup_datetime'])
-    test['hour_of_day'] = test.pickup_datetime.dt.hour.astype(float)
-    test['day'] = test.pickup_datetime.dt.day.astype(float)
-    test['week'] = test.pickup_datetime.dt.week.astype(float)
-    test['month'] = test.pickup_datetime.dt.month.astype(float)
-    test['day_of_year'] = test.pickup_datetime.dt.dayofyear.astype(float)
-    test['week_of_year'] = test.pickup_datetime.dt.weekofyear.astype(float)
-    test['distance'] = test['distance'].astype(float)
-    
-    test = test.drop(['pickup_datetime'], axis=1)
-    
+    test["pickup_datetime"] = to_datetime(test["pickup_datetime"])
+    test["hour_of_day"] = test.pickup_datetime.dt.hour.astype(float)
+    test["day"] = test.pickup_datetime.dt.day.astype(float)
+    test["week"] = test.pickup_datetime.dt.week.astype(float)
+    test["month"] = test.pickup_datetime.dt.month.astype(float)
+    test["day_of_year"] = test.pickup_datetime.dt.dayofyear.astype(float)
+    test["week_of_year"] = test.pickup_datetime.dt.weekofyear.astype(float)
+    test["distance"] = test["distance"].astype(float)
+
+    test = test.drop(["pickup_datetime"], axis=1)
+
     test_xgb = xgb.DMatrix(test)
 
     predict_yellow_taxi = yellow_taxi.predict(test_xgb, ntree_limit=num_round)
     predict_uber = uber.predict(test_xgb, ntree_limit=num_round)
     predict_lyft = lyft.predict(test_xgb, ntree_limit=num_round)
 
+    
+    queryDictUber = {
+        "distance": [distance],
+        "price": [predict_uber],
+        "pickup_datetime" : [pickup_datetime]
+    }
+    
+    test = pd.DataFrame(queryDictUber)
+    test["pickup_datetime"] = to_datetime(test["pickup_datetime"])
+    test["hour_of_day"] = test.pickup_datetime.dt.hour.astype(float)
+    test["day"] = test.pickup_datetime.dt.day.astype(float)
+    test["week"] = test.pickup_datetime.dt.week.astype(float)
+    test["month"] = test.pickup_datetime.dt.month.astype(float)
+    test["day_of_year"] = test.pickup_datetime.dt.dayofyear.astype(float)
+    test["week_of_year"] = test.pickup_datetime.dt.weekofyear.astype(float)
+    test["distance"] = test["distance"].astype(float)
+    test["price"] = test["price"].astype(float)
+
+    test = test.drop(["pickup_datetime"], axis=1)
+    
+    uber_sm_xgb = xgb.DMatrix(test)
+
+    pred_uber_sm = uber_sm.predict(uber_sm_xgb, ntree_limit=num_round)
+    
+    
+    queryDictLyft = {
+        "distance": [distance],
+        "price": [predict_lyft],
+        "pickup_datetime" : [pickup_datetime]
+    }
+    
+    test = pd.DataFrame(queryDictLyft)
+    test["pickup_datetime"] = to_datetime(test["pickup_datetime"])
+    test["hour_of_day"] = test.pickup_datetime.dt.hour.astype(float)
+    test["day"] = test.pickup_datetime.dt.day.astype(float)
+    test["week"] = test.pickup_datetime.dt.week.astype(float)
+    test["month"] = test.pickup_datetime.dt.month.astype(float)
+    test["day_of_year"] = test.pickup_datetime.dt.dayofyear.astype(float)
+    test["week_of_year"] = test.pickup_datetime.dt.weekofyear.astype(float)
+    test["distance"] = test["distance"].astype(float)
+    test["price"] = test["price"].astype(float)
+
+    test = test.drop(["pickup_datetime"], axis=1)
+    
+    lyft_sm_xgb = xgb.DMatrix(test)
+
+    pred_lyft_sm = lyft_sm.predict(lyft_sm_xgb, ntree_limit=num_round)
+
+    
     res = {
-        "yellow_taxi": str(predict_yellow_taxi[0]+2.5), #yellow taxis have a base of 2.5
+        "yellow_taxi": str(
+            predict_yellow_taxi[0] + 2.5
+        ),  # yellow taxis have a base of 2.5
         "uber": str(predict_uber[0]),
-        "lyft": str(predict_lyft[0])
+        "lyft": str(predict_lyft[0]),
+        "uber_sm" : str(pred_uber_sm[0]),
+        "lyft_sm" : str(pred_lyft_sm[0])
     }
     return json.dumps(res)
-
