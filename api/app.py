@@ -28,6 +28,14 @@ def getApproxFares():
     distance = request.json['distance']
     pickup_datetime = request.json['pickup_datetime']
 
+    if distance==0:
+        res = {
+            "yellow_taxi": str(0),
+            "uber" : str(0),
+            "lyft" :str(0)
+        }
+        return json.dumps(res)
+
     queryDict = {
         "distance": [distance],
         "pickup_datetime": [pickup_datetime]

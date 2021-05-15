@@ -6,6 +6,7 @@ import Typography from "@material-ui/core/Typography";
 import {useHistory} from 'react-router-dom';
 import IconButton from '@material-ui/core/IconButton';
 import HomeIcon from '@material-ui/icons/Home';
+import SimpleModel from './SimpleModal';
 
 const useStyles = makeStyles((theme) => ({
   nav: {
@@ -43,7 +44,7 @@ export default function ButtonAppBar() {
             Fare Comparer
           </Typography>
           <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={goHome}>
-            <HomeIcon />
+            <SimpleModel/>
           </IconButton>
         </Toolbar>
       </AppBar>
