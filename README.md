@@ -4,6 +4,7 @@ Final Project for Projects in Programming
 ## Usage
 
 - Start up frontend
+
 `cd client`
 
 `npm i` 
