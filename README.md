@@ -5,11 +5,17 @@ Final Project for Projects in Programming
 
 - Start up frontend
 `cd client`
+
 `npm i` 
+
 `npm start`
 
+
 - Start up Backend
+
 `cd api`
+
 `export FLASK_APP=app.py`
+
 `flask run`
 
