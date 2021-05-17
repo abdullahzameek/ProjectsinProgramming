@@ -20,6 +20,6 @@ Final Project for Projects in Programming
 
 `flask run`
 
-Live Demos
+#### Live Demos
 
 Frontend can be accessed at https://findr-client.herokuapp.com/
